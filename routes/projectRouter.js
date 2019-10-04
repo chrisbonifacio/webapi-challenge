@@ -21,7 +21,13 @@ router.get("/:id", async (req, res) => {
 
   try {
     const project = await Projects.get(id)
-    res.status(200).json(project)
+    if (project) {
+      res.status(200).json(project)
+    } else {
+      res
+        .status(400)
+        .json({ errorMessage: "Project with specified ID does not exist" })
+    }
   } catch (error) {
     res
       .status(400)
@@ -34,7 +40,6 @@ router.post("/", validateProject, async (req, res) => {
   const project = req.body
 
   const newProject = await Projects.insert(project)
-  console.log(newProject)
   res.status(201).json(newProject)
 })
 
@@ -51,12 +56,22 @@ router.put("/:id", validateProject, async (req, res) => {
 })
 
 // DELETE project by ID
-router.delete("/:id", validateProjectID, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   const id = req.params.id
 
-  const project = await Projects.get(id)
-  await Projects.remove(id)
-  res.status(200).json({ deleted: project })
+  try {
+    const project = await Projects.get(id)
+    if (project) {
+      await Projects.remove(id)
+      res.status(200).json({ deleted: project })
+    } else {
+      res
+        .status(400)
+        .json({ errorMessage: "Project with specified ID does not exist" })
+    }
+  } catch (error) {
+    res.status(400).json({ errorMessage: "Could not delete project" })
+  }
 })
 
 // middleware
@@ -69,17 +84,6 @@ function validateProject(req, res, next) {
   } else {
     next()
   }
-}
-
-async function validateProjectID(req, res, next) {
-  const id = req.params.id
-
-  try {
-    await Projects.get(id)
-  } catch (error) {
-    next({ code: 400, message: "Project with specified ID does not exist" })
-  }
-  next()
 }
 
 module.exports = router
