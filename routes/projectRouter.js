@@ -35,15 +35,13 @@ router.get("/:id", async (req, res) => {
   }
 })
 
-// GET project actions by ID
+// GET all of a project's actions by ID
 router.get("/:id/actions", async (req, res) => {
   const id = req.params.id
-
   const actions = await Projects.getProjectActions(id)
   if (!actions.length) {
     res.status(400).json({
-      errorMessage:
-        "Project with specified ID does not exist. No actions to retrieve"
+      errorMessage: "There are no actions to retrieve"
     })
   } else {
     res.status(200).json(actions)
